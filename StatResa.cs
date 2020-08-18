@@ -40,8 +40,8 @@ namespace stade
             Fonction f = new Fonction();
 
 
-            //SUIVANT L'AXE Y EFA METY TSISY BLEM
-            List<Evenement> statsCumules = f.getStats(dbc, idEvent);        
+            //SUIVANT L'AXE Y Efa tsisy blem tsony
+            List<Evenement> statsCumules = f.getStats(dbc, idEvent); //Ze reservations nisy t@ io event io (dates)       
             int[] y = new int[statsCumules.Count];
             for (int i = 0; i < statsCumules.Count;i++)
             {
@@ -53,8 +53,10 @@ namespace stade
             for (int k = 0; k < statsCumules.Count; k++) {
                 mediasPublies = f.getMedias_Pub(dbc); //maka ny medias reetra efa publiés 
             }
-            f.filtrer(mediasPublies, idEvent);      //Ze mediaspubliés tamty evenement ty iany omena
+            f.filtrer(mediasPublies, idEvent);      //Ze medias publiés tamty evenement ty iany omena
             f.getLinkMediaGraph(mediasPublies, statsCumules);   //Liena amle graph le media ( jerena ny date ) MBOLA MISY BLEM 
+            // Medias liés et ayant des points 
+
             Media[] ed = f.rankMedia(mediasPublies); 
 
 
@@ -74,12 +76,12 @@ namespace stade
             chart1.Series[0].Points.DataBindXY(x, y);
             dataGridView1.Columns.Clear();
             dataGridView1.ColumnCount = 3;
-            dataGridView1.Columns[0].Name = "Classement";
+            dataGridView1.Columns[0].Name = "Classement Media";
             dataGridView1.Columns[1].Name = "nom Media";
             dataGridView1.Columns[2].Name = "cumul";
             dataGridView1.Rows.Clear();
             int compt = 1;
-            foreach(Media med in mediasPublies)
+            foreach(Media med in ed)
             {
                 //MISY DISO
                 string[] meds = { "" + compt, med.Nom ,med.Point +""};

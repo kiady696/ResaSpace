@@ -41,16 +41,21 @@ namespace stade
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string idStadeNomStade = comboBox2.Text;
-            char[] cars = { '-' };
-            string idStade = idStadeNomStade.Split(cars)[0];
-            string nom = textBox1.Text;
-            DateTime date = dateTimePicker1.Value;
-            DBConnect dbc = new DBConnect();
-            Fonction f = new Fonction();
-            f.checkIfOccupied(dbc,date, idStade);
-            f.insertEvenement(dbc,date,idStade,nom);
-            
+            try
+            {
+                string idStadeNomStade = comboBox2.Text;
+                char[] cars = { '-' };
+                string idStade = idStadeNomStade.Split(cars)[0];
+                string nom = textBox1.Text;
+                DateTime date = dateTimePicker1.Value;
+                DBConnect dbc = new DBConnect();
+                Fonction f = new Fonction();
+                f.checkIfOccupied(dbc, date, idStade);
+                f.insertEvenement(dbc, date, idStade, nom);
+            }catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -74,6 +79,11 @@ namespace stade
             Evenement ev = evenement[comboBox1.SelectedIndex];
             sr.Ev = ev;
             sr.Show();
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

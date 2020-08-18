@@ -147,7 +147,7 @@ namespace stade
 
                 String queryString = "INSERT INTO NbReservation(id,nb,date) VALUES ('" + f.getNextval("sequenceNbEvenement", dbc) + "', 0 ,@date)";
                 SqlCommand com = new SqlCommand(queryString, con, transac);
-                com.Parameters.AddWithValue("@date", date);
+                com.Parameters.AddWithValue("@date", date.Date);
                 com.ExecuteNonQuery();
                 transac.Commit();
 
@@ -181,7 +181,7 @@ namespace stade
                     
                     String queryString = "INSERT INTO evenement(id,idStade,date,nom) VALUES ('" + f.getNextval("sequenceEvenement", dbc) + "','" + idStade + "',@date,'" +nomEvent+ "')";
                     SqlCommand com = new SqlCommand(queryString, con, transac);
-                    com.Parameters.AddWithValue("@date", date);
+                    com.Parameters.AddWithValue("@date", date.Date);
                     com.ExecuteNonQuery();
                     transac.Commit();
 
@@ -211,7 +211,7 @@ namespace stade
                 con.Open();
                 String queryString = "SELECT * from Evenement WHERE idstade=+'"+idStade+ "' AND date=@date";
                 SqlCommand com = new SqlCommand(queryString, con);
-                com.Parameters.AddWithValue("@date", date);
+                com.Parameters.AddWithValue("@date", date.Date);
                 read = com.ExecuteReader();
                
                 
@@ -278,17 +278,20 @@ namespace stade
         }
 
         public void getLinkMediaGraph(List<Media> medias, List<Evenement> events)
-        {
-            for(int i = 0; i < medias.Count; i++)
+        { //medias efa anle event , events efa anle event , ze mitovy date no jerena
+            for(int i = 0; i < medias.Count; i++) //MILA AZAVAINA / COMPRENEVANA
             {
                 for(int j = 0; j < events.Count; j++)
                 {
-                    if((medias[i].Date_pub - events[j].Date).Days == 0)
+                    if((medias[i].Date_pub - events[j].Date).Days == 0) //reefa mitovy le date
                     {
-                        int c = 0;
-                        if (j > 0)
+                        int c = 0; //c no istocker ny point anle media(ranking)
+                        if (j < events.Count-1)
                         {
-                            c = events[j].Nb - events[j-1].Nb;
+                            //ra nisy date nitovy anakray 
+                            
+                            c = events[j+1].Nb - events[j].Nb; //ny difference anle nbResa anakroa no point anle media 
+                            //mbola misy zavtra tsy azo amty  
                         }
                         else
                         {
@@ -302,20 +305,10 @@ namespace stade
 
         public Media[] rankMedia(List<Media> medias)
         {
-            Media[] res = medias.ToArray();
-            for(int i = 0; i < res.Length; i++)
-            {
-                for(int j = i; j < res.Length; j++)
-                {
-                    if (res[i].Point < res[j].Point)
-                    {
-                        Media temp = res[i];
-                        res[i] = res[j];
-                        res[j] = temp;
-                    }
+           
 
-                }
-            }
+            Media[] res =  medias.OrderByDescending(x => x.Point).ToArray<Media>();
+            
             return res;
         }
 
@@ -331,7 +324,7 @@ namespace stade
                 SqlCommand com = new SqlCommand(queryString, con);
                
                 read = com.ExecuteReader();
-                int cumul = 0;
+                
                 while (read.Read())
                 {
                     zones.Add(new Media(read.GetString(0), read.GetString(1), 0, read.GetDateTime(2),read.GetString(3)));
@@ -355,6 +348,18 @@ namespace stade
             return zones;
         }
 
+        public void filtrerDateDoublon(List<Evenement> events)
+        {
+            for(int i = 0; i < events.Count; i++)
+            {
+                Evenement evTemp = events[i];
+                if ((evTemp.Date - events[i].Date).Days == 0)
+                {
+                    evTemp = events[i];
+                }
+            }
+        }
+
         public List<Evenement> getStats(DBConnect dbc,string idEvent)
         {
             SqlDataReader read = null;
@@ -363,15 +368,15 @@ namespace stade
             try
             {
                 con.Open();
-                String queryString = "SELECT * from NBreservation where idevent='" + idEvent + "' ORDER BY date ASC";
+                String queryString = "SELECT SUM(nb)as sommeNb,date from NBreservation where idevent='"+idEvent+"' GROUP BY date ORDER BY date ASC ";
                 SqlCommand com = new SqlCommand(queryString, con);
                 read = com.ExecuteReader();
                 int cumul = 0;
                 while (read.Read())
                 {
                     Evenement z = new Evenement();
-                    z.Nb =cumul+ read.GetInt32(1);
-                    z.Date = read.GetDateTime(2);
+                    z.Nb =cumul+ read.GetInt32(0);
+                    z.Date = read.GetDateTime(1);
                     zones.Add(z);
                     cumul = z.Nb;
 
@@ -597,13 +602,13 @@ namespace stade
                     String numSiege = sieges[i];
                     String queryString = "INSERT INTO Reservation(id,datereservation,idzone,idStade,numeroSiege,idEvent) VALUES ('" + f.getNextval("sequenceReservation", dbc) + "',@date,'" + idZone + "','" + idStade + "','"+sieges[i]+"','"+idEvent+"')";
                     SqlCommand comm = new SqlCommand(queryString, con, transac);
-                    comm.Parameters.AddWithValue("@date", date);
+                    comm.Parameters.AddWithValue("@date", date.Date);
                     comm.ExecuteNonQuery();
 
                 }
                 string query2 = "Insert into NbReservation(id,nb,date,idEvent) VALUES('" + f.getNextval("sequenceNbReservation", dbc) + "'," + sieges.Length + ",@date,'" + idEvent + "')";
                 SqlCommand com = new SqlCommand(query2, con, transac);
-                com.Parameters.AddWithValue("@date", date);
+                com.Parameters.AddWithValue("@date", date.Date);
                 com.ExecuteNonQuery();
                 transac.Commit();
 
